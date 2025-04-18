@@ -84,65 +84,19 @@ public class BinaryTree<T> : IEnumerable<T> where T : IComparable<T>
       return _currentNode;
     }
 
-    _currentNode = OperatorIncrement(_currentNode);
+    _currentNode = _currentNode++;
     return _currentNode;
   }
 
   public BinaryTreeNode<T> Previous()
   {
-    _currentNode = OperatorDecrement(_currentNode);
+    _currentNode = _currentNode--;
     return _currentNode;
   }
 
   public BinaryTreeNode<T> Current()
   {
     return _currentNode;
-  }
-
-  public BinaryTreeNode<T> OperatorIncrement(BinaryTreeNode<T> node)
-  {
-    if (node.Right == null)
-    {
-      if (node.Parent == null || node == node.Parent.Right)
-      {
-        return null;
-      }
-
-      return node.Parent;
-    }
-    else
-    {
-      var nextNode = node.Right;
-      while (nextNode.Left != null)
-      {
-        nextNode = nextNode.Left;
-      }
-
-      return nextNode;
-    }
-  }
-
-  public BinaryTreeNode<T> OperatorDecrement(BinaryTreeNode<T> node)
-  {
-    if (node.Left == null)
-    {
-      if (node.Parent == null || node == node.Parent.Left)
-      {
-        return null;
-      }
-
-      return node.Parent;
-    }
-    else
-    {
-      var previousNode = node.Left;
-      while (previousNode.Right != null)
-      {
-        previousNode = previousNode.Right;
-      }
-
-      return previousNode;
-    }
   }
 
   public IEnumerable<T> FilteredTraversal(Func<BinaryTreeNode<T>, bool> predicate)
