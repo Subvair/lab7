@@ -4,101 +4,160 @@ using System.Collections.Generic;
 
 public class BinaryTree<T> : IEnumerable<T> where T : IComparable<T>
 {
-  private BinaryTreeNode<T> root;
+  private BinaryTreeNode<T> _root;
+  private BinaryTreeNode<T> _currentNode;
 
   public void Insert(T value)
   {
-    if (root == null)
-      root = new BinaryTreeNode<T>(value);
-    else
-      Insert(root, value);
+    if (_root == null)
+    {
+      _root = new BinaryTreeNode<T>(value);
+      return;
+    }
+
+    InsertNode(_root, value);
   }
 
-  private void Insert(BinaryTreeNode<T> node, T value)
+  private void InsertNode(BinaryTreeNode<T> currentNode, T value)
   {
-    if (value.CompareTo(node.Value) < 0)
+    if (value.CompareTo(currentNode.Value) < 0)
     {
-      if (node.Left == null)
+      if (currentNode.Left == null)
       {
-        node.Left = new BinaryTreeNode<T>(value) { Parent = node };
+        currentNode.Left = new BinaryTreeNode<T>(value) { Parent = currentNode };
       }
-      else Insert(node.Left, value);
+      else
+      {
+        InsertNode(currentNode.Left, value);
+      }
     }
     else
     {
-      if (node.Right == null)
+      if (currentNode.Right == null)
       {
-        node.Right = new BinaryTreeNode<T>(value) { Parent = node };
+        currentNode.Right = new BinaryTreeNode<T>(value) { Parent = currentNode };
       }
-      else Insert(node.Right, value);
+      else
+      {
+        InsertNode(currentNode.Right, value);
+      }
     }
   }
 
   public IEnumerator<T> GetEnumerator()
   {
-    foreach (var node in InOrderTraversal(root))
+    foreach (BinaryTreeNode<T> node in InOrderTraversal(_root))
+    {
       yield return node.Value;
+    }
   }
 
   IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-  private IEnumerable<BinaryTreeNode<T>> InOrderTraversal(BinaryTreeNode<T> node)
+  private IEnumerable<BinaryTreeNode<T>> InOrderTraversal(BinaryTreeNode<T> currentNode)
   {
-    if (node != null)
+    if (currentNode != null)
     {
-      foreach (var n in InOrderTraversal(node.Left))
-        yield return n;
+      foreach (var leftNode in InOrderTraversal(currentNode.Left))
+      {
+        yield return leftNode;
+      }
 
-      yield return node;
+      yield return currentNode;
 
-      foreach (var n in InOrderTraversal(node.Right))
-        yield return n;
+      foreach (var rightNode in InOrderTraversal(currentNode.Right))
+      {
+        yield return rightNode;
+      }
     }
   }
-  public BinaryTreeNode<T> Next(BinaryTreeNode<T> x)
+
+  public BinaryTreeNode<T> Next()
   {
-    if (x.Right == null)
+    if (_currentNode == null)
     {
-      if (x.Parent == null || x == x.Parent.Right)
+      _currentNode = _root;
+      while (_currentNode.Left != null)
+      {
+        _currentNode = _currentNode.Left;
+      }
+      return _currentNode;
+    }
+
+    _currentNode = OperatorIncrement(_currentNode);
+    return _currentNode;
+  }
+
+  public BinaryTreeNode<T> Previous()
+  {
+    _currentNode = OperatorDecrement(_currentNode);
+    return _currentNode;
+  }
+
+  public BinaryTreeNode<T> Current()
+  {
+    return _currentNode;
+  }
+
+  public BinaryTreeNode<T> OperatorIncrement(BinaryTreeNode<T> node)
+  {
+    if (node.Right == null)
+    {
+      if (node.Parent == null || node == node.Parent.Right)
+      {
         return null;
-      else
-        return x.Parent;
+      }
+
+      return node.Parent;
     }
     else
     {
-      var y = x.Right;
-      while (y.Left != null)
-        y = y.Left;
-      return y;
+      var nextNode = node.Right;
+      while (nextNode.Left != null)
+      {
+        nextNode = nextNode.Left;
+      }
+
+      return nextNode;
     }
   }
 
-  public BinaryTreeNode<T> Previous(BinaryTreeNode<T> x)
+  public BinaryTreeNode<T> OperatorDecrement(BinaryTreeNode<T> node)
   {
-    if (x.Left == null)
+    if (node.Left == null)
     {
-      if (x.Parent == null || x == x.Parent.Left)
+      if (node.Parent == null || node == node.Parent.Left)
+      {
         return null;
-      else
-        return x.Parent;
+      }
+
+      return node.Parent;
     }
     else
     {
-      var y = x.Left;
-      while (y.Right != null)
-        y = y.Right;
-      return y;
+      var previousNode = node.Left;
+      while (previousNode.Right != null)
+      {
+        previousNode = previousNode.Right;
+      }
+
+      return previousNode;
     }
   }
 
-  public IEnumerable<T> ExternalIterator(Func<BinaryTreeNode<T>, bool> predicate)
+  public IEnumerable<T> FilteredTraversal(Func<BinaryTreeNode<T>, bool> predicate)
   {
-    foreach (var node in InOrderTraversal(root))
+    foreach (BinaryTreeNode<T> node in InOrderTraversal(_root))
     {
       if (predicate(node))
+      {
         yield return node.Value;
+      }
     }
   }
 
-  public BinaryTreeNode<T> GetRoot() => root;
+  public BinaryTreeNode<T> GetRoot()
+  {
+    return _root;
+  }
 }
